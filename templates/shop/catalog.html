@@ -43,6 +43,24 @@
   .product-card-meta { display: flex; justify-content: space-between; align-items: center; }
   .product-card-price { font-size: 0.95rem; font-weight: 700; color: var(--primary); }
 
+  /* Badge de paquete sobre la imagen */
+  .card-image-wrapper { position: relative; }
+  .badge-bundle {
+    position: absolute;
+    top: 6px; left: 6px;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  /* Header de sección colección con acento violeta */
+  .section-header.is-collection h2 { color: var(--accent); }
+
   .empty-state { text-align: center; color: var(--text-muted); padding: 5rem 1rem; }
   .empty-state h2 { font-size: 1.25rem; margin-bottom: 0.75rem; }
 </style>
@@ -56,7 +74,7 @@
 
 {% if groups %}
   {% for group in groups %}
-    <div class="section-header anim-in">
+    <div class="section-header anim-in{% if not group.is_bundle_group and group.items.0.series_name %} is-collection{% endif %}">
       <h2>{{ group.label }}</h2>
       <hr>
     </div>
@@ -65,7 +83,12 @@
       <a href="/shop/{{ product.fortnite_item_id }}/" style="text-decoration:none; color:inherit;"
          class="anim-in{% if forloop.counter <= 5 %} d{{ forloop.counter }}{% endif %}">
         <div class="product-card">
-          <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+          <div class="card-image-wrapper">
+            <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+            {% if product.is_bundle %}
+              <span class="badge-bundle">Paquete</span>
+            {% endif %}
+          </div>
           <div class="product-card-body">
             <h4>{{ product.name }}</h4>
             <div class="product-card-meta">

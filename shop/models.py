@@ -11,6 +11,8 @@ class Product(models.Model):
     is_available = models.BooleanField(default=True)
     last_seen_in_shop = models.DateTimeField(null=True)
     out_date = models.DateTimeField(null=True, blank=True)
+    series_name = models.CharField(max_length=100, blank=True)  # Set/collab: "MCU Avengers", "Balenciaga Fit"
+    is_bundle = models.BooleanField(default=False)              # True si es un paquete multi-ítem
 
     def __str__(self):
         return f"{self.name} ({self.type})"

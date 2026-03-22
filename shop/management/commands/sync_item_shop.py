@@ -26,9 +26,29 @@ class Command(BaseCommand):
         for entry in entries:
             if not entry.get('brItems'):
                 continue
+
             item = entry['brItems'][0]
             item_id = item['id']
             seen_ids.append(item_id)
+
+            bundle = entry.get('bundle')
+            is_bundle = bundle is not None
+
+            # Nombre: nombre del paquete si es bundle, nombre del ítem si es individual
+            name = bundle['name'] if is_bundle else item['name']
+
+            # Imagen: imagen del paquete si existe, si no la del primer ítem
+            if is_bundle:
+                image_url = bundle.get('image') or item['images'].get('icon', '')
+            else:
+                image_url = item['images'].get('icon', '')
+
+            # Set/colección del primer ítem (aplica a bundles e individuales)
+            item_set = item.get('set')
+            series_name = item_set['value'] if item_set else ''
+
+            # Tipo del primer ítem
+            item_type = item.get('type', {}).get('value', '') if item.get('type') else ''
 
             price_vbucks = entry.get('finalPrice', entry.get('regularPrice', 0))
             price_cop = round(Decimal(price_vbucks) * VBUCKS_TO_COP)
@@ -36,12 +56,14 @@ class Command(BaseCommand):
             Product.objects.update_or_create(
                 fortnite_item_id=item_id,
                 defaults={
-                    'name': item['name'],
-                    'type': item['type']['value'],
+                    'name': name,
+                    'type': item_type,
                     'price_vbucks': price_vbucks,
                     'price_cop': price_cop,
-                    'image_url': item['images'].get('icon', ''),
+                    'image_url': image_url,
                     'is_available': True,
+                    'is_bundle': is_bundle,
+                    'series_name': series_name,
                     'last_seen_in_shop': now(),
                     'out_date': parse_datetime(entry['outDate']) if entry.get('outDate') else None,
                 }
