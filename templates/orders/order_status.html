@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Pedido {{ order.order_id }} — Brooklyn Shop{% endblock %}
+
+{% block extra_css %}
+<style>
+  .status-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 2rem;
+    align-items: start;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  @media (max-width: 768px) {
+    .status-layout { grid-template-columns: 1fr; }
+  }
+
+  .status-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+  .status-card h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1.25rem; }
+
+  /* Status badge grande */
+  .status-hero {
+    text-align: center;
+    padding: 2rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .status-hero .status-icon { font-size: 3.5rem; margin-bottom: 0.75rem; }
+  .status-hero h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .status-hero p { color: var(--text-muted); font-size: 0.9rem; }
+
+  /* Timeline */
+  .timeline { list-style: none; padding: 0; }
+  .timeline li {
+    display: flex;
+    gap: 1rem;
+    padding-bottom: 1.25rem;
+    position: relative;
+  }
+  .timeline li:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 30px;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .tl-dot {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .tl-dot.done { background: var(--success); color: #fff; }
+  .tl-dot.active { background: var(--primary); color: #fff; }
+  .tl-dot.pending { background: var(--border); color: var(--text-muted); }
+  .tl-dot.failed { background: var(--danger); color: #fff; }
+  .tl-content h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.2rem; }
+  .tl-content p { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* Info rows */
+  .info-row { display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+  .info-row:last-child { border-bottom: none; }
+  .info-row span:first-child { color: var(--text-muted); }
+  .info-row span:last-child { font-weight: 500; text-align: right; max-width: 60%; word-break: break-all; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{% comment %}Determine status display info{% endcomment %}
+{% if order.status == 'pending_payment' %}
+  {% with icon="⏳" title="Pendiente de pago" desc="Esperando confirmación del pago." tl_step=1 %}
+  {% include 'orders/_status_body.html' %}
+  {% endwith %}
+{% elif order.status == 'paid' %}
+  {% with icon="💳" title="Pago confirmado" desc="Procesando tu pedido, enviaremos la solicitud de amistad pronto." tl_step=2 %}
+  {% include 'orders/_status_body.html' %}
+  {% endwith %}
+{% elif order.status == 'friend_request_sent' %}
+  {% with icon="📨" title="Solicitud enviada" desc="Revisa tus solicitudes de amistad en Fortnite y acéptala." tl_step=3 %}
+  {% include 'orders/_status_body.html' %}
+  {% endwith %}
+{% elif order.status == 'awaiting_acceptance' %}
+  {% with icon="⌛" title="Esperando que aceptes" desc="Acepta la solicitud de amistad que enviamos en Fortnite." tl_step=3 %}
+  {% include 'orders/_status_body.html' %}
+  {% endwith %}
+{% elif order.status == 'friendship_confirmed' %}
+  {% with icon="🤝" title="Amistad confirmada" desc="Perfecto. Esperando las 48 horas requeridas por Fortnite para enviar el regalo." tl_step=4 %}
+  {% include 'orders/_status_body.html' %}
+  {% endwith %}
+{% elif order.status == 'ready_to_gift' %}
+  {% with icon="🎁" title="Listo para regalar" desc="El regalo está siendo enviado. Recibirás una notificación en Fortnite." tl_step=5 %}
+  {% include 'orders/_status_body.html' %}
+  {% endwith %}
+{% elif order.status == 'delivered' %}
+  {% with icon="✅" title="Entregado" desc="El regalo fue enviado exitosamente. ¡Disfruta tu cosmético!" tl_step=6 %}
+  {% include 'orders/_status_body.html' %}
+  {% endwith %}
+{% elif order.status == 'failed_nickname' %}
+  {% with icon="❌" title="Nickname no encontrado" desc="No encontramos tu cuenta de Epic Games. Contáctanos para resolverlo." tl_step=0 %}
+  {% include 'orders/_status_body.html' %}
+  {% endwith %}
+{% elif order.status == 'failed_privacy' %}
+  {% with icon="🔒" title="Privacidad bloqueada" desc="Tu configuración de privacidad bloquea solicitudes de amistad. Cámbiala y contáctanos." tl_step=0 %}
+  {% include 'orders/_status_body.html' %}
+  {% endwith %}
+{% elif order.status == 'no_bot_available' %}
+  {% with icon="⚠️" title="Sin bot disponible" desc="Capacidad temporalmente llena. Te contactaremos pronto." tl_step=0 %}
+  {% include 'orders/_status_body.html' %}
+  {% endwith %}
+{% else %}
+  {% with icon="🔄" title="En proceso" desc="Tu pedido está siendo procesado." tl_step=2 %}
+  {% include 'orders/_status_body.html' %}
+  {% endwith %}
+{% endif %}
+
+{% endblock %}

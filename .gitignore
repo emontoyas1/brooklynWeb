@@ -1,0 +1,35 @@
+# Entorno virtual
+.venv/
+
+# Variables de entorno y secretos
+.env
+device_auths.json
+
+# Base de datos local
+db.sqlite3
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pycache
+
+# Archivos de distribución
+*.egg-info/
+dist/
+build/
+
+# Archivos estáticos recolectados (producción)
+staticfiles/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Claude Code
+.claude/
+
+# Logs
+*.log

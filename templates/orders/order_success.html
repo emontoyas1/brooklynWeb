@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Pedido recibido — Brooklyn Shop{% endblock %}
+
+{% block extra_css %}
+<style>
+  .success-container {
+    max-width: 600px;
+    margin: 3rem auto;
+    text-align: center;
+  }
+  .success-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+  .success-container h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.75rem; }
+  .success-container p { color: var(--text-muted); margin-bottom: 0.5rem; }
+
+  .order-id-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    margin: 1.75rem 0;
+    text-align: left;
+  }
+  .order-id-box p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+  .order-id-box code { font-size: 0.85rem; color: var(--primary); word-break: break-all; }
+
+  .next-steps {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: left;
+    margin-bottom: 1.5rem;
+  }
+  .next-steps h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+  .next-steps ol { padding-left: 1.25rem; color: var(--text-muted); font-size: 0.9rem; line-height: 2; }
+  .next-steps ol li strong { color: var(--text); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-container">
+  <div class="success-icon">✅</div>
+  <h1>¡Pedido recibido!</h1>
+  <p>Tu pedido fue creado correctamente.</p>
+  <p>Pronto recibirás una solicitud de amistad en Fortnite.</p>
+
+  <div class="order-id-box">
+    <p>Número de pedido — guárdalo para hacer seguimiento:</p>
+    <code>{{ order.order_id }}</code>
+  </div>
+
+  <div class="next-steps">
+    <h3>¿Qué sigue?</h3>
+    <ol>
+      <li><strong>Pago confirmado</strong> — recibirás confirmación por email o contacto.</li>
+      <li><strong>Solicitud de amistad</strong> — enviaremos una desde nuestra cuenta de Fortnite.</li>
+      <li><strong>Acepta la amistad</strong> — es obligatorio para poder enviarte el regalo.</li>
+      <li><strong>48 horas</strong> — Fortnite exige este período antes de permitir regalos.</li>
+      <li><strong>Regalo enviado</strong> — te notificamos cuando esté listo.</li>
+    </ol>
+  </div>
+
+  <a href="/orders/{{ order.order_id }}/" class="btn btn-primary" style="width:100%; text-align:center; display:block; padding:0.85rem;">
+    Ver estado del pedido
+  </a>
+</div>
+{% endblock %}

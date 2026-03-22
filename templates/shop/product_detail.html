@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} — Brooklyn Shop{% endblock %}
+
+{% block extra_css %}
+<style>
+  .product-layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+  @media (max-width: 768px) {
+    .product-layout { grid-template-columns: 1fr; }
+  }
+
+  .product-image img {
+    width: 100%;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+  }
+  .product-image img:hover {
+    transform: scale(1.02);
+    box-shadow: 0 12px 40px rgba(79,142,247,0.2);
+  }
+
+  @keyframes glowPulseBtn {
+    0%, 100% { box-shadow: 0 0 10px rgba(79,142,247,0.3); }
+    50%       { box-shadow: 0 0 28px rgba(79,142,247,0.65); }
+  }
+  .btn-buy {
+    animation: glowPulseBtn 2.5s ease infinite;
+  }
+
+  .product-info h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+
+  .product-price {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin: 1.25rem 0;
+  }
+  .product-price small { font-size: 1rem; color: var(--text-muted); font-weight: 400; }
+
+  .product-meta { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+
+  .info-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .info-box p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+  .info-box p + p { margin-top: 0.4rem; }
+
+  .no-price-notice {
+    background: #1c1400;
+    border: 1px solid var(--warning);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    color: #fcd34d;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:1rem;">
+  <a href="/shop/" style="color:var(--text-muted); font-size:0.9rem;">← Volver a la tienda</a>
+</div>
+
+<div class="product-layout">
+  <div class="product-image" style="animation: fadeInUp 0.6s ease both;">
+    <img src="{{ product.image_url }}" alt="{{ product.name }}">
+  </div>
+
+  <div class="product-info" style="animation: fadeInUp 0.6s 0.18s ease both;">
+    <div class="product-meta">
+      <span class="badge badge-blue">{{ product.type }}</span>
+      <span class="badge badge-purple">{{ product.price_vbucks }} V-Bucks</span>
+    </div>
+
+    <h1>{{ product.name }}</h1>
+
+    {% if product.out_date %}
+    <div style="background:#2d1000; border:1px solid #c2410c; border-radius:8px; padding:0.6rem 1rem; margin:0.75rem 0; font-size:0.9rem; color:#fb923c;">
+      ⏰ Este objeto se va el <strong>{{ product.out_date|date:"d \d\e F \d\e Y" }}</strong>
+    </div>
+    {% endif %}
+
+    {% if product.price_cop > 0 %}
+      <div class="product-price">
+        ${{ product.price_cop|floatformat:0 }} COP
+      </div>
+
+      <div class="info-box">
+        <p>✅ Entrega por regalo en Fortnite — en menos de 72 horas.</p>
+        <p>⏳ Se requieren 48 horas de amistad antes de poder enviar el regalo.</p>
+        <p>💳 Pago por MercadoPago — PSE, Nequi, Daviplata o tarjeta.</p>
+      </div>
+
+      <a href="/checkout/{{ product.fortnite_item_id }}/" class="btn btn-primary btn-buy" style="width:100%; text-align:center; display:block; padding:1rem;">
+        Comprar ahora
+      </a>
+
+    {% else %}
+      <div class="no-price-notice">
+        ⚠️ El precio en COP aún no está configurado. Vuelve pronto.
+      </div>
+      <a href="/shop/" class="btn btn-outline">Ver otros ítems</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

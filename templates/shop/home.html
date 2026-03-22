@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Brooklyn Shop — Cosméticos Fortnite Colombia{% endblock %}
+
+{% block extra_css %}
+<style>
+  .hero {
+    text-align: center;
+    padding: 5rem 1rem 3rem;
+  }
+  .hero h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+  .hero h1 span { color: var(--primary); }
+  .hero p {
+    color: var(--text-muted);
+    font-size: 1.15rem;
+    max-width: 520px;
+    margin: 0 auto 2rem;
+  }
+  .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+  .how-section { margin: 4rem 0; }
+  .how-section h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem; text-align: center; }
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+  }
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .step-num {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 0.75rem;
+  }
+  .step h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; }
+  .step p { font-size: 0.82rem; color: var(--text-muted); }
+
+  .featured-section { margin: 3rem 0; }
+  .featured-section h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; }
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+  .product-card { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: var(--surface); }
+  .product-card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+  .product-card-body { padding: 0.75rem; }
+  .product-card-body h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .product-card-price { font-size: 1rem; font-weight: 700; color: var(--primary); }
+  .product-card-price small { font-size: 0.75rem; color: var(--text-muted); font-weight: 400; }
+  .product-card {
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  }
+  .product-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 32px rgba(79,142,247,0.15);
+  }
+  .product-card img { transition: transform 0.35s ease; }
+  .product-card:hover img { transform: scale(1.05); }
+
+  .empty-state { text-align: center; color: var(--text-muted); padding: 3rem; }
+  .empty-state p { margin-bottom: 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1 style="animation: fadeInUp 0.6s ease both;">
+    Cosméticos Fortnite<br><span>entregados al instante</span>
+  </h1>
+  <p style="animation: fadeInUp 0.6s 0.15s ease both;">
+    Compra skins, picos, emotes y más. Paga con PSE, Nequi o tarjeta. Entrega por regalo en Fortnite.
+  </p>
+  <div class="hero-actions" style="animation: fadeInUp 0.6s 0.3s ease both;">
+    <a href="/shop/" class="btn btn-primary">Ver tienda</a>
+  </div>
+</section>
+
+<section class="how-section">
+  <h2 class="anim-in">¿Cómo funciona?</h2>
+  <div class="steps">
+    <div class="step anim-in d1">
+      <div class="step-num">1</div>
+      <h3>Elige tu cosmético</h3>
+      <p>Navega la tienda y selecciona el ítem que quieres.</p>
+    </div>
+    <div class="step anim-in d2">
+      <div class="step-num">2</div>
+      <h3>Ingresa tu nickname</h3>
+      <p>Escribe tu nombre de usuario de Epic Games exacto.</p>
+    </div>
+    <div class="step anim-in d3">
+      <div class="step-num">3</div>
+      <h3>Paga</h3>
+      <p>PSE, Nequi, Daviplata o tarjeta de crédito.</p>
+    </div>
+    <div class="step anim-in d4">
+      <div class="step-num">4</div>
+      <h3>Acepta la amistad</h3>
+      <p>Recibirás una solicitud de amistad desde nuestra cuenta bot.</p>
+    </div>
+    <div class="step anim-in d5">
+      <div class="step-num">5</div>
+      <h3>Recibe el regalo</h3>
+      <p>Después de 48 horas de amistad, te enviamos el regalo.</p>
+    </div>
+  </div>
+</section>
+
+{% if featured %}
+<section class="featured-section">
+  <h2 class="anim-in">En tienda hoy</h2>
+  <div class="products-grid">
+    {% for product in featured %}
+    <a href="/shop/{{ product.fortnite_item_id }}/" style="text-decoration:none; color:inherit;"
+       class="anim-in d{{ forloop.counter }}">
+      <div class="product-card">
+        <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+        <div class="product-card-body">
+          <h4>{{ product.name }}</h4>
+          <div class="product-card-price">
+            {% if product.price_cop > 0 %}
+              ${{ product.price_cop|floatformat:0 }} COP
+            {% else %}
+              <small>Precio próximamente</small>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  <div style="text-align:center; margin-top:2rem;" class="anim-in">
+    <a href="/shop/" class="btn btn-outline">Ver todos los ítems</a>
+  </div>
+</section>
+{% else %}
+<div class="empty-state anim-in">
+  <p>La tienda se sincroniza diariamente con Fortnite.</p>
+  <a href="/shop/" class="btn btn-outline">Ver tienda</a>
+</div>
+{% endif %}
+{% endblock %}

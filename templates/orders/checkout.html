@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout — {{ product.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .checkout-layout {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 2.5rem;
+    align-items: start;
+  }
+  @media (max-width: 768px) {
+    .checkout-layout { grid-template-columns: 1fr; }
+    .order-summary { order: -1; }
+  }
+
+  .checkout-form h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 1.75rem; }
+
+  .order-summary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: sticky;
+    top: 1.5rem;
+  }
+  .order-summary h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .summary-product { display: flex; gap: 1rem; align-items: center; margin-bottom: 1.25rem; }
+  .summary-product img { width: 72px; height: 72px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
+  .summary-product-info h4 { font-size: 1rem; font-weight: 600; }
+  .summary-product-info span { font-size: 0.8rem; color: var(--text-muted); }
+  .summary-divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+  .summary-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.5rem; }
+  .summary-row.total { font-size: 1.1rem; font-weight: 700; margin-top: 0.5rem; }
+  .summary-row.total span:last-child { color: var(--primary); }
+
+  .terms-check { display: flex; gap: 0.75rem; align-items: flex-start; margin-top: 1rem; }
+  .terms-check input { margin-top: 3px; flex-shrink: 0; }
+  .terms-check label { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:1.5rem;">
+  <a href="/shop/{{ product.fortnite_item_id }}/" style="color:var(--text-muted); font-size:0.9rem;">← Volver al ítem</a>
+</div>
+
+<div class="checkout-layout">
+  <!-- Formulario -->
+  <div class="checkout-form">
+    <h1>Finalizar compra</h1>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="epic_nickname">Nickname de Epic Games *</label>
+        <input
+          type="text"
+          id="epic_nickname"
+          name="epic_nickname"
+          value="{{ form.epic_nickname|default:'' }}"
+          placeholder="Exactamente como aparece en Fortnite"
+          autocomplete="off"
+        >
+        {% if errors.epic_nickname %}
+          <div class="form-error">{{ errors.epic_nickname }}</div>
+        {% endif %}
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.3rem;">
+          Debe ser exacto. Verifica mayúsculas, números y caracteres especiales.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="customer_email">Email (opcional)</label>
+        <input
+          type="email"
+          id="customer_email"
+          name="customer_email"
+          value="{{ form.customer_email|default:'' }}"
+          placeholder="Para enviarte confirmación"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="customer_contact">WhatsApp o Discord *</label>
+        <input
+          type="text"
+          id="customer_contact"
+          name="customer_contact"
+          value="{{ form.customer_contact|default:'' }}"
+          placeholder="Ej: +57 300 123 4567 o usuario#1234"
+        >
+        {% if errors.customer_contact %}
+          <div class="form-error">{{ errors.customer_contact }}</div>
+        {% endif %}
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.3rem;">
+          Te contactamos si hay algún problema con tu pedido.
+        </div>
+      </div>
+
+      <div class="terms-check">
+        <input type="checkbox" id="terms" name="terms" required>
+        <label for="terms">
+          Entiendo que el regalo se enviará <strong>después de 48 horas de amistad confirmada</strong>.
+          El tiempo de entrega total puede ser de hasta 72 horas.
+          No se hacen reembolsos una vez confirmado el pago.
+        </label>
+      </div>
+
+      <div style="margin-top:1.5rem;">
+        <button type="submit" class="btn btn-primary" style="width:100%; padding:1rem; font-size:1rem;">
+          Continuar al pago →
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Resumen -->
+  <div class="order-summary">
+    <h3>Resumen del pedido</h3>
+    <div class="summary-product">
+      <img src="{{ product.image_url }}" alt="{{ product.name }}">
+      <div class="summary-product-info">
+        <h4>{{ product.name }}</h4>
+        <span>{{ product.type }} &mdash; {{ product.price_vbucks }} V-Bucks</span>
+      </div>
+    </div>
+    <hr class="summary-divider">
+    <div class="summary-row">
+      <span>Subtotal</span>
+      <span>${{ product.price_cop|floatformat:0 }} COP</span>
+    </div>
+    <div class="summary-row">
+      <span>Procesamiento de pago</span>
+      <span>Gratis</span>
+    </div>
+    <hr class="summary-divider">
+    <div class="summary-row total">
+      <span>Total</span>
+      <span>${{ product.price_cop|floatformat:0 }} COP</span>
+    </div>
+  </div>
+</div>
+{% endblock %}

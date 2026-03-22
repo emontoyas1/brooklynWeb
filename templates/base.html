@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Brooklyn Shop — Cosméticos Fortnite{% endblock %}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f1a;
+      --surface: #161929;
+      --border: #252a42;
+      --primary: #4f8ef7;
+      --primary-dark: #2d6de0;
+      --accent: #a855f7;
+      --text: #e2e8f0;
+      --text-muted: #7c8aa0;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* NAV */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+    .nav-brand {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.05em;
+    }
+    .nav-brand span { color: var(--primary); }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a { color: var(--text-muted); font-size: 0.9rem; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* MAIN */
+    main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-block;
+      padding: 0.65rem 1.5rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; text-decoration: none; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    /* BADGE */
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge-blue { background: #1e3a8a; color: #93c5fd; }
+    .badge-purple { background: #4c1d95; color: #c4b5fd; }
+    .badge-green { background: #14532d; color: #86efac; }
+    .badge-yellow { background: #78350f; color: #fcd34d; }
+    .badge-gray { background: #1e293b; color: #94a3b8; }
+
+    /* ALERT */
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    .alert-error { background: #450a0a; border: 1px solid #b91c1c; color: #fca5a5; }
+    .alert-success { background: #052e16; border: 1px solid #15803d; color: #86efac; }
+
+    /* FORM */
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 0.65rem 0.9rem;
+      font-size: 0.95rem;
+    }
+    .form-group input:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .form-error { color: var(--danger); font-size: 0.8rem; margin-top: 0.3rem; }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+      margin-top: 4rem;
+    }
+
+    /* ── ANIMATIONS ─────────────────────────────────────────── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes glowPulse {
+      0%, 100% { box-shadow: 0 0 8px  rgba(79,142,247,0.25); }
+      50%       { box-shadow: 0 0 22px rgba(79,142,247,0.6);  }
+    }
+    @keyframes gradientShift {
+      0%   { background-position: 0%   50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0%   50%; }
+    }
+
+    /* Scroll-triggered fade-up */
+    .anim-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    .anim-in.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    /* Stagger delays */
+    .anim-in.d1 { transition-delay: 0.05s; }
+    .anim-in.d2 { transition-delay: 0.12s; }
+    .anim-in.d3 { transition-delay: 0.19s; }
+    .anim-in.d4 { transition-delay: 0.26s; }
+    .anim-in.d5 { transition-delay: 0.33s; }
+
+    /* Enhanced nav brand */
+    .nav-brand {
+      background: linear-gradient(90deg, var(--text) 0%, var(--primary) 40%, var(--accent) 70%, var(--text) 100%);
+      background-size: 250% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 6s ease infinite;
+    }
+    /* nav-brand span override not needed — gradient covers it */
+
+    /* Enhanced button hovers */
+    .btn { transition: opacity 0.15s, transform 0.15s, box-shadow 0.2s; }
+    .btn:hover { opacity: 1; transform: translateY(-2px); text-decoration: none; }
+    .btn-primary:hover { box-shadow: 0 4px 18px rgba(79,142,247,0.45); }
+    .btn-accent:hover  { box-shadow: 0 4px 18px rgba(168,85,247,0.45); }
+
+    /* Enhanced card hover */
+    .card {
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(79,142,247,0.12);
+    }
+
+    /* Reduced motion — respect user preference */
+    @media (prefers-reduced-motion: reduce) {
+      .anim-in { opacity: 1; transform: none; transition: none; }
+      .nav-brand { animation: none; -webkit-text-fill-color: var(--text); background: none; }
+      .btn, .card { transition: opacity 0.1s; }
+      .btn:hover, .card:hover { transform: none; }
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-brand">Brooklyn<span>Shop</span></a>
+  <div class="nav-links">
+    <a href="/shop/">Tienda</a>
+    <a href="/admin/">Admin</a>
+  </div>
+</nav>
+
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<footer>
+  &copy; 2026 BrooklynShop &mdash; Cosméticos Fortnite Colombia
+</footer>
+
+<script>
+  // Animate elements when they enter the viewport
+  (function () {
+    const observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+
+    document.querySelectorAll('.anim-in').forEach(function (el) {
+      observer.observe(el);
+    });
+  })();
+</script>
+</body>
+</html>

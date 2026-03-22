@@ -1,0 +1,75 @@
+<div class="status-layout">
+  <div>
+    <!-- Estado actual -->
+    <div class="status-card" style="margin-bottom:1.5rem;">
+      <div class="status-hero">
+        <div class="status-icon">{{ icon }}</div>
+        <h1>{{ title }}</h1>
+        <p>{{ desc }}</p>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="status-card">
+      <h2>Progreso del pedido</h2>
+      <ul class="timeline">
+        <li>
+          <div class="tl-dot {% if tl_step >= 1 %}done{% else %}pending{% endif %}">{% if tl_step >= 1 %}✓{% else %}1{% endif %}</div>
+          <div class="tl-content">
+            <h4>Pago confirmado</h4>
+            {% if order.payment_confirmed_at %}<p>{{ order.payment_confirmed_at|date:"d M Y H:i" }}</p>{% endif %}
+          </div>
+        </li>
+        <li>
+          <div class="tl-dot {% if tl_step >= 3 %}done{% elif tl_step == 2 %}active{% else %}pending{% endif %}">{% if tl_step >= 3 %}✓{% else %}2{% endif %}</div>
+          <div class="tl-content">
+            <h4>Solicitud de amistad enviada</h4>
+            {% if order.friend_request_sent_at %}<p>{{ order.friend_request_sent_at|date:"d M Y H:i" }}</p>{% endif %}
+          </div>
+        </li>
+        <li>
+          <div class="tl-dot {% if tl_step >= 4 %}done{% elif tl_step == 3 %}active{% else %}pending{% endif %}">{% if tl_step >= 4 %}✓{% else %}3{% endif %}</div>
+          <div class="tl-content">
+            <h4>Amistad confirmada</h4>
+            {% if order.friendship_confirmed_at %}<p>{{ order.friendship_confirmed_at|date:"d M Y H:i" }}</p>{% endif %}
+          </div>
+        </li>
+        <li>
+          <div class="tl-dot {% if tl_step >= 5 %}done{% elif tl_step == 4 %}active{% else %}pending{% endif %}">{% if tl_step >= 5 %}✓{% else %}4{% endif %}</div>
+          <div class="tl-content">
+            <h4>Espera de 48 horas</h4>
+            {% if order.friendship_confirmed_at %}<p>Listo para regalar: {{ order.friendship_confirmed_at|date:"d M Y" }} + 48h</p>{% endif %}
+          </div>
+        </li>
+        <li>
+          <div class="tl-dot {% if tl_step >= 6 %}done{% elif tl_step == 5 %}active{% else %}pending{% endif %}">{% if tl_step >= 6 %}✓{% else %}5{% endif %}</div>
+          <div class="tl-content">
+            <h4>Regalo entregado</h4>
+            {% if order.delivered_at %}<p>{{ order.delivered_at|date:"d M Y H:i" }}</p>{% endif %}
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Panel lateral con detalles -->
+  <div>
+    <div class="status-card">
+      <h2>Detalles del pedido</h2>
+      <div class="info-row"><span>Pedido</span><span>{{ order.order_id }}</span></div>
+      <div class="info-row"><span>Ítem</span><span>{{ order.product_snapshot.name }}</span></div>
+      <div class="info-row"><span>Total pagado</span><span>${{ order.price_paid|floatformat:0 }} COP</span></div>
+      <div class="info-row"><span>Nickname Epic</span><span>{{ order.epic_nickname }}</span></div>
+      {% if order.customer_contact %}
+      <div class="info-row"><span>Contacto</span><span>{{ order.customer_contact }}</span></div>
+      {% endif %}
+      <div class="info-row"><span>Fecha</span><span>{{ order.created_at|date:"d M Y" }}</span></div>
+    </div>
+
+    {% if tl_step == 3 %}
+    <div class="alert alert-error" style="margin-top:1rem;">
+      <strong>Acción requerida:</strong> Abre Fortnite y acepta la solicitud de amistad para que podamos continuar.
+    </div>
+    {% endif %}
+  </div>
+</div>
