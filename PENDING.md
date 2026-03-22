@@ -29,7 +29,8 @@ Solo falta el token.
    - https://www.mercadopago.com.co/developers/es/docs/your-integrations/test/cards
 7. Verificar que:
    - `order.status` pasa a `'paid'`
-   - `dispatch_friend_request` se llama (revisa logs en terminal)
+   - El email de confirmación llega al cliente (revisar consola en dev)
+   - `dispatch_friend_request` se llama (revisar logs en terminal)
    - `BotAssignment` se crea en BD
 
 ---
@@ -113,72 +114,128 @@ sudo certbot --nginx -d tudominio.com -d www.tudominio.com
 */15 * * * * /home/brooklyn/brooklynWeb/.venv/bin/python /home/brooklyn/brooklynWeb/manage.py check_ready_to_gift >> /var/log/brooklyn/ready_gift.log 2>&1
 ```
 
----
-
-### 6. Repositorio en GitHub
-```bash
-git init
-git add .
-git commit -m "Initial commit: Django setup, models, admin, shop, checkout, MP integration"
-git remote add origin https://github.com/TU_USUARIO/brooklynWeb.git
-git push -u origin main
+**Configurar email en producción** (después de crear cuenta en brevo.com):
+```env
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp-relay.brevo.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=tu@email.com
+EMAIL_HOST_PASSWORD=tu_clave_smtp_brevo
+DEFAULT_FROM_EMAIL=BrooklynShop <noreply@tudominio.com>
 ```
-Sin repo no hay forma de hacer `git pull` en el VPS 2 para desplegar.
 
 ---
 
 ## 🟢 Mejoras (no bloquean el lanzamiento)
 
-### 7. Tema visual personalizado
-El diseño actual es funcional (oscuro, estilo Fortnite) pero genérico.
-**Lo que se puede personalizar:**
-- Logo / nombre de la tienda
-- Paleta de colores (variables CSS en `templates/base.html`)
-- Fuente (reemplazar `'Segoe UI'` por una de Google Fonts)
+### 6. Logo y personalización visual
+Animaciones ya implementadas. Queda pendiente:
+- Agregar logo de la tienda cuando esté listo (en `templates/base.html`, reemplazar texto del nav)
+- Fuente personalizada (reemplazar `'Segoe UI'` por una de Google Fonts en `base.html`)
 - Imágenes de hero en la landing (`templates/shop/home.html`)
 - Banner de promociones
 
-**Cómo:** Todo el CSS global está en `templates/base.html` en variables `:root {}`.
+**Cómo:** Variables CSS globales en `templates/base.html` en `:root {}`.
 
-### 8. Ajuste de precios individual
-Actualmente todos los precios se calculan automáticamente (vbucks × 16.2).
-Si se quiere un precio diferente para un ítem específico, se puede editar
-`price_cop` directamente en Django Admin (`/admin/shop/product/`).
+---
 
-**Mejora futura:** Agregar un campo `price_override` para que el sync no pise
-los precios editados manualmente.
+### 7. Ajuste de precios individual (`price_override`)
+**Problema actual:** Si se edita `price_cop` manualmente en Admin, el siguiente `sync_item_shop`
+lo pisa y lo calcula de nuevo automáticamente.
 
-### 9. Descripción en detalle de producto
+**Solución:** Agregar campo `price_override` al modelo `Product`:
+```python
+# shop/models.py
+price_override = models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True)
+```
+Y en `sync_item_shop.py`, respetar el override:
+```python
+price_cop = product.price_override if product.price_override else round(Decimal(price_vbucks) * VBUCKS_TO_COP)
+```
+Requiere migración.
+
+---
+
+### 8. Descripción del ítem en detalle de producto
 La API de Fortnite devuelve `item['description']` (ej: "Wherever she goes trouble follows.")
-pero no la guardamos ni mostramos. Se puede agregar al modelo y al template de detalle.
+pero no se guarda ni muestra.
 
-### 10. Rareza del ítem
+**Qué agregar:**
+- Campo `description = models.TextField(blank=True)` en `shop/models.py`
+- En `sync_item_shop.py`: `description = entry.get('description', '')`
+- En `templates/shop/product_detail.html`: mostrar debajo del nombre
+
+Requiere migración.
+
+---
+
+### 9. Rareza del ítem (badge de color)
 La API devuelve `item['rarity']['displayValue']` (Common, Uncommon, Rare, Epic, Legendary, Icon Series).
-Se podría guardar y mostrar como badge de color en las tarjetas del catálogo.
 
-### 11. Video showcase
+**Qué agregar:**
+- Campo `rarity = models.CharField(max_length=50, blank=True)` en `shop/models.py`
+- En `sync_item_shop.py`: `rarity = entry.get('rarity', {}).get('value', '')`
+- Badge de color en las tarjetas del catálogo y en el detalle
+
+Colores sugeridos por rareza:
+| Rareza | Color |
+|---|---|
+| common | gris |
+| uncommon | verde |
+| rare | azul |
+| epic | morado |
+| legendary | naranja |
+| icon | cian |
+
+Requiere migración.
+
+---
+
+### 10. Video showcase en detalle de producto
 La API devuelve `item['showcaseVideo']` (ID de YouTube).
-Se podría embeber en la página de detalle del producto.
 
-### 12. Email de confirmación al cliente
-Cuando `order.status` cambia a `'paid'`, enviar un email con:
-- Número de pedido (UUID)
-- Nombre del ítem
-- Instrucciones de qué hacer (esperar solicitud de amistad, aceptarla)
-Requiere configurar `EMAIL_BACKEND` en settings y un proveedor SMTP (ej: SendGrid, Mailgun).
+**Qué agregar:**
+- Campo `showcase_video = models.CharField(max_length=20, blank=True)` en `shop/models.py`
+- En `sync_item_shop.py`: `showcase_video = entry.get('showcaseVideo', '') or ''`
+- En `templates/shop/product_detail.html`: embed de YouTube si existe el campo
 
-### 13. Notificación al admin cuando hay pedido nuevo
-Un email o mensaje de Telegram cuando llega un pago confirmado.
-Útil para reaccionar rápido si el bot falla.
+Requiere migración.
 
-### 14. Reintentos automáticos
-Si un pedido queda en `retry_pending`, actualmente no hay mecanismo automático.
-Se podría agregar un tercer management command `retry_failed_orders.py`
-que reintente `dispatch_friend_request` en pedidos con ese estado.
+---
 
-### 15. Página 404 y 500 personalizadas
-Actualmente Django muestra sus páginas de error genéricas.
-Se pueden agregar `templates/404.html` y `templates/500.html`.
+### 11. Notificación al admin cuando llega un pedido
+Un aviso inmediato cuando `order.status` cambia a `'paid'`.
+Útil para reaccionar rápido si el bot falla o el cliente necesita ayuda.
+
+**Opciones:**
+- **Email al admin** — más sencillo, usar `send_mail` con `ADMIN_EMAIL` en `.env`
+- **Telegram** — más rápido, requiere crear un bot con BotFather y un `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`
+
+**Dónde agregarlo:** en `orders/views.py`, función `_process_payment`, junto al `send_order_confirmation`.
+
+---
+
+### 12. Reintentos automáticos de pedidos fallidos
+Si un pedido queda en `retry_pending` (bot falló al enviar la solicitud de amistad),
+actualmente no hay mecanismo automático para reintentarlo.
+
+**Solución:** Crear `orders/management/commands/retry_failed_orders.py`:
+```python
+# Reintenta dispatch_friend_request en pedidos con status='retry_pending'
+# Agregar al crontab: */30 * * * * python manage.py retry_failed_orders
+```
+
+---
+
+### 13. Páginas de error personalizadas (404 y 500)
+Actualmente Django muestra sus páginas genéricas en producción (`DEBUG=False`).
+
+**Qué crear:**
+- `templates/404.html` — página "no encontrado" con estilo BrooklynShop
+- `templates/500.html` — página "error del servidor"
+
+Ambas deben extender `base.html` y tener un botón para volver a la tienda.
+**Nota:** Solo se ven con `DEBUG=False`.
 
 ---
 
@@ -193,10 +250,19 @@ Se pueden agregar `templates/404.html` y `templates/500.html`.
 | Tienda pública (catálogo, detalle, checkout) | ✅ Completo |
 | Precio COP auto-calculado | ✅ Completo |
 | Integración MercadoPago (código) | ✅ Código listo |
+| Animaciones CSS/JS | ✅ Completo |
+| Email de confirmación al cliente | ✅ Código listo (falta credencial Brevo en producción) |
+| Repositorio GitHub | ✅ https://github.com/emontoyas1/brooklynWeb |
 | MercadoPago probado en sandbox | ⏳ Pendiente (falta cédula para crear cuenta) |
 | Bots reales conectados | ⏳ Pendiente (falta registrarlos en BD de producción) |
-| Repositorio GitHub | ⏳ Pendiente |
 | Dominio | ⏳ Pendiente (por comprar) |
 | VPS 2 configurado | ⏳ Pendiente |
 | HTTPS | ⏳ Pendiente (necesita dominio primero) |
-| Tema visual personalizado | ⏳ Para después del lanzamiento |
+| Logo / fuente personalizada | ⏳ Pendiente (sin logo aún) |
+| price_override en sync | ⏳ Pendiente |
+| Descripción del ítem | ⏳ Pendiente |
+| Rareza del ítem | ⏳ Pendiente |
+| Video showcase | ⏳ Pendiente |
+| Notificación al admin | ⏳ Pendiente |
+| Reintentos automáticos | ⏳ Pendiente |
+| Páginas 404 y 500 personalizadas | ⏳ Pendiente |
