@@ -13,6 +13,9 @@ class Product(models.Model):
     out_date = models.DateTimeField(null=True, blank=True)
     series_name = models.CharField(max_length=100, blank=True)  # Set/collab: "MCU Avengers", "Balenciaga Fit"
     is_bundle = models.BooleanField(default=False)              # True si es un paquete multi-ítem
+    layout_name = models.CharField(max_length=200, blank=True)  # Nombre de la sección en la tienda: "MCU Avengers"
+    layout_rank = models.IntegerField(default=9999)             # Orden de la sección en la tienda
+    sort_priority = models.IntegerField(default=0)              # Orden del ítem dentro de su sección
 
     def __str__(self):
         return f"{self.name} ({self.type})"

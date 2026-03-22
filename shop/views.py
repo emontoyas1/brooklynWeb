@@ -38,30 +38,25 @@ def home(request):
 
 
 def catalog(request):
-    products = Product.objects.filter(is_available=True)
-    total = products.count()
-    groups = []
-
-    # ── 1. PAQUETES primero ───────────────────────────────────────
-    bundles = list(products.filter(is_bundle=True).order_by('name'))
-    if bundles:
-        groups.append({'label': '📦 Paquetes', 'items': bundles, 'is_bundle': True})
-
-    # ── 2. RESTO agrupado por tipo ────────────────────────────────
-    rest = (
-        products
-        .filter(is_bundle=False)
-        .annotate(sort_order=TYPE_ORDER)
-        .order_by('sort_order', 'name')
+    products = (
+        Product.objects
+        .filter(is_available=True)
+        .order_by('layout_rank', '-sort_priority', 'name')
     )
+    total = products.count()
 
-    type_groups = {}
-    for p in rest:
-        type_groups.setdefault(p.type, []).append(p)
+    # Agrupar por sección de la tienda (layout_name), respetando el orden de Fortnite
+    sections = {}
+    section_rank = {}
+    for p in products:
+        key = p.layout_name or 'Otros'
+        sections.setdefault(key, []).append(p)
+        section_rank[key] = p.layout_rank
 
-    for type_key in sorted(type_groups.keys(), key=lambda t: TYPE_ORDER_DICT.get(t, 9)):
-        label = TYPE_LABELS.get(type_key, type_key.capitalize())
-        groups.append({'label': label, 'items': type_groups[type_key], 'is_bundle': False})
+    groups = [
+        {'label': name, 'items': items}
+        for name, items in sorted(sections.items(), key=lambda x: section_rank[x[0]])
+    ]
 
     return render(request, 'shop/catalog.html', {'groups': groups, 'total': total})
 
