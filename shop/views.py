@@ -42,37 +42,26 @@ def catalog(request):
     total = products.count()
     groups = []
 
-    # ── 1. PAQUETES ──────────────────────────────────────────────
+    # ── 1. PAQUETES primero ───────────────────────────────────────
     bundles = list(products.filter(is_bundle=True).order_by('name'))
     if bundles:
-        groups.append({'label': '📦 Paquetes', 'items': bundles, 'is_bundle_group': True})
+        groups.append({'label': '📦 Paquetes', 'items': bundles, 'is_bundle': True})
 
-    # ── 2. POR COLECCIÓN (ítems con set, sin ser bundle) ─────────
-    items_with_set = products.filter(is_bundle=False, series_name__gt='').order_by('series_name', 'name')
-
-    sets = {}
-    for p in items_with_set:
-        sets.setdefault(p.series_name, []).append(p)
-
-    # Ordenar colecciones de mayor a menor cantidad de ítems
-    for set_name, items in sorted(sets.items(), key=lambda x: (-len(x[1]), x[0])):
-        groups.append({'label': set_name, 'items': items, 'is_bundle_group': False})
-
-    # ── 3. SIN COLECCIÓN (agrupados por tipo) ────────────────────
-    items_no_set = (
+    # ── 2. RESTO agrupado por tipo ────────────────────────────────
+    rest = (
         products
-        .filter(is_bundle=False, series_name='')
+        .filter(is_bundle=False)
         .annotate(sort_order=TYPE_ORDER)
         .order_by('sort_order', 'name')
     )
 
     type_groups = {}
-    for p in items_no_set:
+    for p in rest:
         type_groups.setdefault(p.type, []).append(p)
 
     for type_key in sorted(type_groups.keys(), key=lambda t: TYPE_ORDER_DICT.get(t, 9)):
         label = TYPE_LABELS.get(type_key, type_key.capitalize())
-        groups.append({'label': label, 'items': type_groups[type_key], 'is_bundle_group': False})
+        groups.append({'label': label, 'items': type_groups[type_key], 'is_bundle': False})
 
     return render(request, 'shop/catalog.html', {'groups': groups, 'total': total})
 
